@@ -41,7 +41,7 @@ jobs:
       - name: Build Docker image
         run: |
           # Adjust the path below after checking List all files output
-          docker build -t $ECR_REPO:latest .
+          docker build -t $ECR_REPO:latest -f Strapi/Dockerfile Strapi/
           docker tag $ECR_REPO:latest $ECR_REPO:latest
 
       #  Push Docker image to ECR
