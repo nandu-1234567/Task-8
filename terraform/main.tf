@@ -24,6 +24,9 @@ data "aws_subnets" "default" {
 resource "aws_security_group" "ecs_sg" {
   name   = "strapi-sg"
   vpc_id = data.aws_vpc.default.id
+   lifecycle {
+    prevent_destroy = true
+  }
 
   ingress {
     from_port   = 1337
@@ -59,6 +62,10 @@ resource "aws_ecs_cluster" "main" {
 resource "aws_cloudwatch_log_group" "strapi_logs" {
   name              = "/ecs/strapi1"
   retention_in_days = 7
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 ########################
