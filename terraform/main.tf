@@ -136,7 +136,7 @@ resource "aws_ecs_service" "strapi_service" {
   }
 
   depends_on = [aws_cloudwatch_log_group.strapi_logs]
-  wait_for_steady_state = true
+  
 }
 
 resource "aws_cloudwatch_dashboard" "strapi_dashboard" {
