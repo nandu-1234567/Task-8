@@ -47,7 +47,11 @@ jobs:
       #  Push Docker image to ECR
       - name: Push Docker image
         run: docker push $ECR_REPO:latest
-
+       # Setup Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.6.0
       #  Initialize Terraform
       - name: Terraform Init
         run: terraform -chdir=./terraform init
