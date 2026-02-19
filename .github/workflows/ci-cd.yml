@@ -10,13 +10,13 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      AWS_REGION: us-east-1          
+      AWS_REGION: us-east-1
       CLUSTER_NAME: strapi-cluster
       SERVICE_NAME: strapi-service
-      ECR_REPO: 811738710312.dkr.ecr.us-east-1.amazonaws.com/strapiarp 
+      ECR_REPO: 811738710312.dkr.ecr.us-east-1.amazonaws.com/strapiarp
 
     steps:
-      #  Checkout code
+      # Checkout code
       - name: Checkout repository
         uses: actions/checkout@v3
 
@@ -34,21 +34,19 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
 
       # Build Docker image
-     - name: Build Docker image
-       run: |
-         docker build -t $ECR_REPO:latest -f strapi/Dockerfile strapi/
-         docker tag $ECR_REPO:latest $ECR_REPO:latest
-
+      - name: Build Docker image
+        run: |
+          docker build -t $ECR_REPO:latest -f strapi/Dockerfile strapi/
+          docker tag $ECR_REPO:latest $ECR_REPO:latest
 
       # Push Docker image to ECR
       - name: Push Docker image
-        run: |
-          docker push $ECR_REPO:latest
+        run: docker push $ECR_REPO:latest
 
-      #  Initialize Terraform
+      # Initialize Terraform
       - name: Terraform Init
         run: terraform -chdir=./terraform init
 
-      #  Apply Terraform
+      # Apply Terraform
       - name: Terraform Apply
         run: terraform -chdir=./terraform apply -auto-approve
