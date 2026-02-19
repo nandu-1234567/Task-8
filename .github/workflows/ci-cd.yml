@@ -3,7 +3,7 @@ name: Deploy Strapi to ECS
 on:
   push:
     branches:
-      - main   # triggers when you push to main branch
+      - main  # triggers when you push to main branch
 
 jobs:
   deploy:
@@ -16,11 +16,15 @@ jobs:
       ECR_REPO: 811738710312.dkr.ecr.us-east-1.amazonaws.com/strapiarp
 
     steps:
-      # Checkout code
+      #  Checkout code
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Configure AWS credentials
+      #  DEBUG: List all files to verify Dockerfile location
+      - name: List all files
+        run: ls -R
+
+      #  Configure AWS credentials
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -28,25 +32,26 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # Login to Amazon ECR
+      #  Login to Amazon ECR
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      # Build Docker image
+      #  Build Docker image
       - name: Build Docker image
         run: |
-          docker build -t $ECR_REPO:latest -f strapi/Dockerfile strapi/
+          # Adjust the path below after checking List all files output
+          docker build -t $ECR_REPO:latest .
           docker tag $ECR_REPO:latest $ECR_REPO:latest
 
-      # Push Docker image to ECR
+      #  Push Docker image to ECR
       - name: Push Docker image
         run: docker push $ECR_REPO:latest
 
-      # Initialize Terraform
+      #  Initialize Terraform
       - name: Terraform Init
         run: terraform -chdir=./terraform init
 
-      # Apply Terraform
+      #  Apply Terraform
       - name: Terraform Apply
         run: terraform -chdir=./terraform apply -auto-approve
