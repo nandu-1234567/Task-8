@@ -1,7 +1,7 @@
 resource "aws_lb" "alb" {
   name               = "strapi-alb"
   load_balancer_type = "application"
-  subnets            = aws_subnet.public[*].id
+  subnets            =  data.aws_subnet_ids.public.ids
   security_groups    = [aws_security_group.alb_sg.id]
 }
 
