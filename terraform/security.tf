@@ -1,5 +1,6 @@
 resource "aws_security_group" "alb_sg" {
-  vpc_id = aws_vpc.main.id
+  name = "alb-sg1
+  vpc_id = data.aws_vpc.existing.id
 
   ingress {
     from_port   = 80
@@ -17,7 +18,7 @@ resource "aws_security_group" "alb_sg" {
 }
 
 resource "aws_security_group" "ecs_sg" {
-  vpc_id = aws_vpc.main.id
+  vpc_id =  data.aws_vpc.existing.id
 
   ingress {
     from_port       = 1337
