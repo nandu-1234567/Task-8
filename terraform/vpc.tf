@@ -1,17 +1,17 @@
 # Get all availability zones in the current region
 data "aws_availability_zones" "available" {}
 
-# Reference the default VPC in the region
-data "aws_vpc" "default" {
-  default = true
-}
-
-# Get all subnets in the default VPC
-data "aws_subnets" "public" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.default.id]
+resource "aws_vpc" "main" {
+  cidr_block = "10.0.0.0/16"
+  tags = {
+    Name = "strapi-vpc"
   }
 }
 
-
+resource "aws_subnet" "public" {
+  count                   = 2
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.${count.index}.0/24"
+  availability_zone       = data.aws_availability_zones.available.names[count.index]
+  map_public_ip_on_launch = true
+}
