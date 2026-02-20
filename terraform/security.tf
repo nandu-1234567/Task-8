@@ -1,5 +1,5 @@
 resource "aws_security_group" "alb_sg" {
-  name = "alb-sg1
+  name = "alb-sg1"
   vpc_id = data.aws_vpc.existing.id
 
   ingress {
