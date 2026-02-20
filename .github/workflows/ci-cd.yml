@@ -1,61 +1,84 @@
-name: Deploy Strapi to ECS
+name: Strapi Full CI/CD
 
 on:
   push:
     branches:
-      - main  # triggers when you push to main branch
+      - main
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  ECR_REPOSITORY: strapi-repo
+  ECS_CLUSTER: strapi-cluster
+  ECS_SERVICE: strapi-service
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    env:
-      AWS_REGION: us-east-1
-      CLUSTER_NAME: strapi-cluster
-      SERVICE_NAME: strapi-service
-      ECR_REPO: 811738710312.dkr.ecr.us-east-1.amazonaws.com/strapiarp
-
     steps:
-      #  Checkout code
-      - name: Checkout repository
-        uses: actions/checkout@v3
 
-      #  DEBUG: List all files to verify Dockerfile location
-      - name: List all files
-        run: ls -R
+      # Checkout repository
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       #  Configure AWS credentials
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      #  Login to Amazon ECR
+      #  Setup Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      #  Terraform Init
+      - name: Terraform Init
+        run: terraform init
+        working-directory: terraform
+
+      #  Terraform Validate
+      - name: Terraform Validate
+        run: terraform validate
+        working-directory: terraform
+
+      #  Terraform Plan
+      - name: Terraform Plan
+        run: terraform plan
+        working-directory: terraform
+
+      # Terraform Apply
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        working-directory: terraform
+
+      #  Login to ECR
       - name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
 
       #  Build Docker image
-      - name: Build Docker image
+      - name: Build Docker Image
         run: |
-          # Adjust the path below after checking List all files output
-          docker build -t $ECR_REPO:latest -f Strapi/Dockerfile Strapi/
-          docker tag $ECR_REPO:latest $ECR_REPO:latest
+          docker build -t $ECR_REPOSITORY:${{ github.sha }} ./Strapi
 
-      #  Push Docker image to ECR
-      - name: Push Docker image
-        run: docker push $ECR_REPO:latest
-       # Setup Terraform
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.6.0
-      #  Initialize Terraform
-      - name: Terraform Init
-        run: terraform -chdir=./terraform init
+      # Tag Docker image
+      - name: Tag Docker Image
+        run: |
+          docker tag $ECR_REPOSITORY:${{ github.sha }} \
+          ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:${{ github.sha }}
 
-      #  Apply Terraform
-      - name: Terraform Apply
-        run: terraform -chdir=./terraform apply -auto-approve
+      #  Push to ECR
+      - name: Push Docker Image
+        run: |
+          docker push \
+          ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:${{ github.sha }}
+
+      # Force ECS Deployment
+      - name: Update ECS Service
+        run: |
+          aws ecs update-service \
+            --cluster $ECS_CLUSTER \
+            --service $ECS_SERVICE \
+            --force-new-deployment
