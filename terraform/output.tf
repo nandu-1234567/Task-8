@@ -1,7 +1,3 @@
-output "cluster_name" {
-  value = aws_ecs_cluster.main.name
-}
-
-output "service_name" {
-  value = aws_ecs_service.strapi_service.name
+output "application_url" {
+  value = "http://${aws_lb.alb.dns_name}"
 }
