@@ -1,11 +1,8 @@
 data "aws_availability_zones" "available" {}
 
-
-# Reference existing default VPC
-data.aws_vpc.existing.id {
+data "aws_vpc" "existing" {
   default = true
 }
-
 data "aws_subnets" "public" {
   filter {
     name   = "vpc-id"
