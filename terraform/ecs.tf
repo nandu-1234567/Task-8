@@ -38,7 +38,7 @@ resource "aws_ecs_service" "strapi_service" {
   desired_count   = 1
 
   network_configuration {
-    subnets          = data.aws_subnet.public.ids
+    subnets          = data.aws_subnets.public.ids
     security_groups  = [aws_security_group.ecs_sg.id]
     assign_public_ip = true
   }
