@@ -25,3 +25,8 @@ variable "memory" {
 variable "log_group_name" {
   default = "/ecs/strapi"
 }
+# Variable for existing ECS Task Execution Role ARN
+variable "ecs_task_execution_role_arn" {
+  description = "ARN of an existing ECS Task Execution Role for Strapi"
+  default     = "arn:aws:iam::811738710312:role/ecsTaskExecutionRole"  # replace with your actual existing role ARN
+}
