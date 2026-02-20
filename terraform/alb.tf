@@ -8,7 +8,7 @@ resource "aws_lb" "alb" {
 resource "aws_lb_target_group" "strapi_tg" {
   port        = 1337
   protocol    = "HTTP"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = data.aws_vpc.existing.id
   target_type = "ip"
 }
 
