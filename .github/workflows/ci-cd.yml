@@ -37,6 +37,10 @@ jobs:
       - name: Terraform Init
         run: terraform init
         working-directory: terraform
+      - name: Import ECR (if exists)
+        run: terraform import aws_ecr_repository.strapi_repo strapi-repo || true
+      - name: Import Log Group (if exists)
+        run: terraform import aws_cloudwatch_log_group.strapi_logs /ecs/strapi || true
 
       #  Terraform Validate
       - name: Terraform Validate
